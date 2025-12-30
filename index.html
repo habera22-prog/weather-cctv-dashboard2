@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>CCTV 모니터링 (CSV)</title>
+  <title>CCTV 12권역 모니터링</title>
 
   <style>
     :root{
@@ -25,7 +25,6 @@
       color:var(--text);
       overflow:hidden;
     }
-
     header{
       position: sticky; top:0; z-index:100;
       height: var(--headerH);
@@ -37,7 +36,7 @@
       border-bottom: 1px solid rgba(255,255,255,.08);
       box-sizing: border-box;
     }
-    .title{ font-weight:900; font-size:14px; }
+    .title{ font-weight:800; font-size:14px; letter-spacing:.2px; }
     .sub{ font-size:12px; color:var(--muted); }
 
     .controls{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
@@ -75,7 +74,7 @@
       box-shadow: 0 8px 30px rgba(0,0,0,.25);
       display:flex;
       flex-direction:column;
-      min-height: 240px;
+      min-height: 180px;
     }
     .cardHead{
       display:flex; align-items:center; justify-content:space-between;
@@ -85,7 +84,7 @@
       box-sizing:border-box;
     }
     .meta{ display:flex; flex-direction:column; gap:4px; min-width:0; }
-    .region{ font-weight:900; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .region{ font-weight:800; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
     .note{ font-size:11px; color:var(--muted); line-height:1.3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
     .headBtns{ display:flex; gap:6px; }
@@ -102,279 +101,263 @@
     }
     .pill:hover{ border-color: rgba(255,255,255,.28); background: rgba(255,255,255,.10); }
 
-    .frameWrap{
-      position:relative;
-      flex:1;
-      background:#111;
-      min-height: 180px;
+    .body{
+      padding:12px;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
     }
-    iframe{
+    .hint{
+      font-size:12px;
+      color: rgba(255,255,255,.75);
+      line-height:1.45;
+    }
+    .actions{
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
+      align-items:center;
+    }
+
+    /* (선택) 미리보기 iframe은 기본 숨김 */
+    .preview{
+      display:none;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius:12px;
+      overflow:hidden;
+      background:#111;
+      height:220px;
+    }
+    .preview iframe{
       width:100%;
       height:100%;
       border:0;
       background:#111;
     }
 
-    /* ✅ iframe 접고 “버튼 모드”로 바꾸기 */
-    .fallback{
-      position:absolute; inset:0;
-      display:none;
-      align-items:center; justify-content:center;
-      padding:14px;
-      text-align:center;
-      background: linear-gradient(0deg, rgba(0,0,0,.55), rgba(0,0,0,.35));
-    }
-    .fallback.show{ display:flex; }
-    .fallback .box{
-      border:1px solid rgba(255,255,255,.18);
-      background: rgba(255,255,255,.06);
-      border-radius:12px;
+    .toast{
+      position:fixed; left:50%; bottom:14px; transform:translateX(-50%);
+      background: rgba(0,0,0,.7);
+      border: 1px solid rgba(255,255,255,.14);
+      color:#fff;
       padding:10px 12px;
-      max-width:340px;
-      color: rgba(255,255,255,.85);
+      border-radius:12px;
       font-size:12px;
+      opacity:0;
+      transition: opacity .2s ease;
+      pointer-events:none;
+      z-index:200;
+      max-width: 92vw;
+      white-space: pre-line;
     }
-    .fallback .actions{ margin-top:10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
+    .toast.show{ opacity:1; }
   </style>
 </head>
 
 <body>
   <header>
     <div>
-      <div class="title">CCTV 모니터링 (구글시트 CSV 연동)</div>
+      <div class="title">CCTV 12권역 모니터링</div>
       <div class="sub" id="statusText">데이터 로딩 중…</div>
     </div>
 
     <div class="controls">
-      <button class="btn" id="reloadAll">전체 리로드</button>
-      <button class="btn" id="toggleAuto">자동 새로고침: OFF</button>
-      <button class="btn" id="toggleStrict">차단추정시 즉시접기: ON</button>
-      <span class="sub" id="autoInfo">권장: 5~10분</span>
+      <button class="btn" id="reloadData">CSV 다시읽기</button>
+      <button class="btn" id="openAll">전체 새창 열기</button>
+      <span class="sub">※ 재생/표시는 새창이 가장 안정적</span>
     </div>
   </header>
 
   <div class="grid" id="grid"></div>
+  <div class="toast" id="toast"></div>
 
-<script>
-  const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZZaK8GDz_FZsefh-XoCkPmQhKOugjSRNioC5M8fAUH87iiyQV8KK28wCVN4_dbWJukM-Rbwkkbz_G/pub?gid=1422576665&single=true&output=csv";
+  <script>
+    // ✅ 대표CCTV 시트(웹게시 CSV)
+    const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZZaK8GDz_FZsefh-XoCkPmQhKOugjSRNioC5M8fAUH87iiyQV8KK28wCVN4_dbWJukM-Rbwkkbz_G/pub?gid=1422576665&single=true&output=csv";
 
-  const grid = document.getElementById("grid");
-  const reloadAllBtn = document.getElementById("reloadAll");
-  const toggleAutoBtn = document.getElementById("toggleAuto");
-  const toggleStrictBtn = document.getElementById("toggleStrict");
-  const autoInfo = document.getElementById("autoInfo");
-  const statusText = document.getElementById("statusText");
+    const grid = document.getElementById("grid");
+    const reloadDataBtn = document.getElementById("reloadData");
+    const openAllBtn = document.getElementById("openAll");
+    const statusText = document.getElementById("statusText");
+    const toast = document.getElementById("toast");
 
-  let autoOn = false;
-  let strictFallback = true; // ✅ 차단 추정이면 iframe 빨리 접기
-  let autoTimer = null;
-  const AUTO_MIN = 5;
+    function showToast(msg){
+      toast.textContent = msg;
+      toast.classList.add("show");
+      setTimeout(()=>toast.classList.remove("show"), 2200);
+    }
 
-  function escapeHtml(s){
-    return String(s || "")
-      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
-  }
-  function escapeAttr(s){
-    return String(s || "")
-      .replace(/&/g,"&amp;").replace(/"/g,"&quot;")
-      .replace(/</g,"&lt;").replace(/>/g,"&gt;");
-  }
+    function escapeHtml(s){
+      return String(s || "")
+        .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+    }
+    function escapeAttr(s){
+      return String(s || "")
+        .replace(/&/g,"&amp;").replace(/"/g,"&quot;")
+        .replace(/</g,"&lt;").replace(/>/g,"&gt;");
+    }
 
-  function parseCsv(text){
-    const rows = [];
-    let row = [], cur = "", inQ = false;
-    for (let i=0; i<text.length; i++){
-      const ch = text[i], next = text[i+1];
-      if (ch === '"'){
-        if (inQ && next === '"'){ cur += '"'; i++; }
-        else inQ = !inQ;
-        continue;
+    // CSV 파서
+    function parseCsv(text){
+      const rows = [];
+      let row = [], cur = "", inQ = false;
+      for (let i=0; i<text.length; i++){
+        const ch = text[i];
+        const next = text[i+1];
+
+        if (ch === '"'){
+          if (inQ && next === '"'){ cur += '"'; i++; }
+          else inQ = !inQ;
+          continue;
+        }
+        if (!inQ && ch === ","){ row.push(cur); cur=""; continue; }
+        if (!inQ && (ch === "\n" || ch === "\r")){
+          if (ch === "\r" && next === "\n") i++;
+          row.push(cur); cur="";
+          if (row.some(c => String(c||"").trim() !== "")) rows.push(row);
+          row = [];
+          continue;
+        }
+        cur += ch;
       }
-      if (!inQ && ch === ","){ row.push(cur); cur=""; continue; }
-      if (!inQ && (ch === "\n" || ch === "\r")){
-        if (ch === "\r" && next === "\n") i++;
-        row.push(cur); cur="";
+      if (cur.length || row.length){
+        row.push(cur);
         if (row.some(c => String(c||"").trim() !== "")) rows.push(row);
-        row = [];
-        continue;
       }
-      cur += ch;
+      return rows;
     }
-    if (cur.length || row.length){
-      row.push(cur);
-      if (row.some(c => String(c||"").trim() !== "")) rows.push(row);
+
+    function normalizeHeaders(h){
+      return String(h||"").trim().toLowerCase()
+        .replace(/\s+/g,"")
+        .replace(/[\u200b-\u200d\uFEFF]/g,"");
     }
-    return rows;
-  }
 
-  function normalizeHeaders(h){
-    return String(h||"").trim().toLowerCase()
-      .replace(/\s+/g,"")
-      .replace(/[\u200b-\u200d\uFEFF]/g,"");
-  }
+    function mapCsvToItems(rows){
+      if (!rows || rows.length < 2) return [];
+      const header = rows[0];
+      const idx = {};
+      header.forEach((h, i) => idx[normalizeHeaders(h)] = i);
 
-  function mapCsvToItems(rows){
-    if (!rows || rows.length < 2) return [];
-    const header = rows[0];
-    const idx = {};
-    header.forEach((h, i) => idx[normalizeHeaders(h)] = i);
+      const iRegion = idx["region"] ?? idx["권역"] ?? idx["지역"] ?? 0;
+      const iUrl    = idx["url"] ?? idx["링크"] ?? idx["cctv"] ?? idx["주소"] ?? 1;
+      const iNote   = idx["note"] ?? idx["비고"] ?? idx["설명"] ?? 2;
 
-    const iRegion = idx["region"] ?? idx["권역"] ?? idx["지역"] ?? 0;
-    const iUrl    = idx["url"] ?? idx["링크"] ?? idx["cctv"] ?? idx["주소"] ?? 1;
-    const iNote   = idx["note"] ?? idx["비고"] ?? idx["설명"] ?? 2;
-
-    return rows.slice(1)
-      .map(r => ({
-        region: String(r[iRegion] ?? "").trim(),
-        url: String(r[iUrl] ?? "").trim(),
-        note: String(r[iNote] ?? "").trim()
-      }))
-      .filter(x => x.region && x.url);
-  }
-
-  function withCacheBust(url){
-    if (!url) return "";
-    try{
-      const u = new URL(url);
-      u.searchParams.set("_t", Date.now());
-      return u.toString();
-    }catch(e){
-      return url + (url.includes("?") ? "&" : "?") + "_t=" + Date.now();
+      return rows.slice(1)
+        .map(r => ({
+          region: String(r[iRegion] ?? "").trim(),
+          url: String(r[iUrl] ?? "").trim(),
+          note: String(r[iNote] ?? "").trim()
+        }))
+        .filter(x => x.region && x.url);
     }
-  }
 
-  function buildCard(item, idx){
-    const region = item.region || "-";
-    const note = item.note || "";
-    const url = item.url || "";
+    function buildCard(item){
+      const card = document.createElement("div");
+      card.className = "card";
 
-    const card = document.createElement("div");
-    card.className = "card";
+      const region = item.region || "-";
+      const note = item.note || "";
+      const url = item.url || "";
 
-    card.innerHTML = `
-      <div class="cardHead">
-        <div class="meta">
-          <div class="region">${escapeHtml(region)}</div>
-          <div class="note">${note ? escapeHtml(note) : "&nbsp;"}</div>
-        </div>
-        <div class="headBtns">
-          <a class="pill" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">새창</a>
-          <button class="pill" data-action="reload">리로드</button>
-        </div>
-      </div>
-
-      <div class="frameWrap">
-        <iframe data-idx="${idx}" src="${escapeAttr(withCacheBust(url))}" loading="lazy"></iframe>
-
-        <div class="fallback" id="fb_${idx}">
-          <div class="box">
-            iframe 재생이 제한될 수 있어요.<br/>
-            <b>관제 화면 방해를 줄이기 위해 자동으로 접었습니다.</b>
-            <div class="actions">
-              <a class="pill" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">새창으로 보기</a>
-              <button class="pill" data-action="try">다시 시도</button>
-            </div>
+      card.innerHTML = `
+        <div class="cardHead">
+          <div class="meta">
+            <div class="region">${escapeHtml(region)}</div>
+            <div class="note">${note ? escapeHtml(note) : "&nbsp;"}</div>
+          </div>
+          <div class="headBtns">
+            <a class="pill" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">재생(새창)</a>
+            <button class="pill" data-act="togglePreview">미리보기</button>
           </div>
         </div>
-      </div>
-    `;
 
-    const iframe = card.querySelector("iframe");
-    const fb = card.querySelector("#fb_" + idx);
+        <div class="body">
+          <div class="hint">
+            • 재생이 안되면 “재생(새창)”이 가장 안정적입니다.<br/>
+            • “미리보기”는 사이트 정책에 따라 표시가 막힐 수 있어요.
+          </div>
 
-    // 개별 리로드
-    card.querySelector('[data-action="reload"]')?.addEventListener("click", () => {
-      iframe.src = withCacheBust(url);
-      if (fb) fb.classList.remove("show");
-    });
+          <div class="actions">
+            <button class="btn" data-act="copy">URL 복사</button>
+            <a class="btn" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">열기</a>
+          </div>
 
-    // 다시 시도
-    card.querySelector('[data-action="try"]')?.addEventListener("click", () => {
-      if (fb) fb.classList.remove("show");
-      iframe.style.display = "block";
-      iframe.src = withCacheBust(url);
-      armFallbackCheck(iframe, fb, url);
-    });
+          <div class="preview" data-preview>
+            <iframe src="${escapeAttr(url)}" loading="lazy"></iframe>
+          </div>
+        </div>
+      `;
 
-    // ✅ 차단 추정이면 빨리 접기(브라우저 경고가 계속 뜨는 걸 최소화)
-    armFallbackCheck(iframe, fb, url);
+      card.querySelector('[data-act="copy"]').addEventListener("click", async () => {
+        try{
+          await navigator.clipboard.writeText(url);
+          showToast("URL 복사 완료");
+        }catch(e){
+          showToast("복사 실패(브라우저 권한 확인)");
+        }
+      });
 
-    return card;
-  }
+      card.querySelector('[data-act="togglePreview"]').addEventListener("click", () => {
+        const p = card.querySelector("[data-preview]");
+        if (!p) return;
+        const isOpen = p.style.display === "block";
+        p.style.display = isOpen ? "none" : "block";
+      });
 
-  function armFallbackCheck(iframe, fb, url){
-    if (!strictFallback) return;
+      return card;
+    }
 
-    // 완벽 판별 불가라 “관제 방해 최소화” 목적의 추정 로직:
-    // 2.5초 후에도 로드/화면이 애매하면 iframe 숨기고 버튼 모드로 전환
-    setTimeout(() => {
-      // iframe이 이미 다른 페이지로 이동됐거나 제거됐으면 skip
-      if (!iframe || !fb) return;
+    let latestItems = [];
 
-      // 여기서 cross-origin 때문에 내부 접근 불가.
-      // 대신 "일단 접어서 경고 노출을 줄인다"가 목적.
-      fb.classList.add("show");
-      iframe.style.display = "none";
-    }, 2500);
-  }
+    async function loadAndRender(){
+      grid.innerHTML = "";
+      statusText.textContent = "CSV 로딩 중…";
 
-  function reloadAll(){
-    document.querySelectorAll(".card iframe").forEach((iframe) => {
-      const src = iframe.getAttribute("src") || "";
-      iframe.setAttribute("src", withCacheBust(src));
-    });
-  }
+      try{
+        const res = await fetch(CSV_URL, { cache: "no-store" });
+        if (!res.ok) throw new Error("CSV HTTP " + res.status);
+        const text = await res.text();
 
-  async function loadAndRender(){
-    grid.innerHTML = "";
-    statusText.textContent = "CSV 로딩 중…";
+        const rows = parseCsv(text);
+        const items = mapCsvToItems(rows);
+        latestItems = items;
 
-    try{
-      const res = await fetch(CSV_URL, { cache: "no-store" });
-      if (!res.ok) throw new Error("CSV HTTP " + res.status);
-      const text = await res.text();
+        if (!items.length){
+          statusText.textContent = "CSV 데이터가 비어있거나(또는 컬럼명이 다름) 표시할 항목이 없습니다.";
+          return;
+        }
 
-      const rows = parseCsv(text);
-      const items = mapCsvToItems(rows);
+        items.forEach(item => grid.appendChild(buildCard(item)));
 
-      if (!items.length){
-        statusText.textContent = "CSV 데이터가 비어있거나 표시할 항목이 없습니다.";
-        return;
+        const now = new Date();
+        statusText.textContent =
+          `표시 ${items.length}개 · 마지막 로드: ${now.toLocaleString("ko-KR")}`;
+
+      }catch(e){
+        statusText.textContent = "로딩 실패: " + (e.message || e);
       }
-
-      items.forEach((item, idx) => grid.appendChild(buildCard(item, idx)));
-
-      const now = new Date();
-      statusText.textContent =
-        `표시 ${items.length}개 · 마지막 로드: ${now.toLocaleString("ko-KR")} · (시트 수정 시 새로고침 반영)`;
-
-    }catch(e){
-      statusText.textContent = "로딩 실패: " + (e.message || e);
     }
-  }
 
-  reloadAllBtn.addEventListener("click", reloadAll);
+    reloadDataBtn.addEventListener("click", () => {
+      loadAndRender();
+      showToast("CSV 다시읽기");
+    });
 
-  toggleAutoBtn.addEventListener("click", () => {
-    autoOn = !autoOn;
-    toggleAutoBtn.textContent = "자동 새로고침: " + (autoOn ? "ON" : "OFF");
-    autoInfo.textContent = autoOn ? (AUTO_MIN + "분마다 전체 리로드") : "권장: 5~10분";
+    openAllBtn.addEventListener("click", () => {
+      if (!latestItems.length) return;
+      // 팝업 차단될 수 있음 (브라우저 정책)
+      let opened = 0;
+      latestItems.slice(0, 24).forEach(it => {
+        const w = window.open(it.url, "_blank", "noopener,noreferrer");
+        if (w) opened++;
+      });
+      showToast(`새창 열기: ${opened}/${Math.min(latestItems.length,24)} (차단되면 브라우저 팝업 허용)`);
+    });
 
-    if (autoTimer) clearInterval(autoTimer);
-    autoTimer = null;
-
-    if (autoOn){
-      autoTimer = setInterval(reloadAll, AUTO_MIN * 60 * 1000);
-    }
-  });
-
-  toggleStrictBtn.addEventListener("click", () => {
-    strictFallback = !strictFallback;
-    toggleStrictBtn.textContent = "차단추정시 즉시접기: " + (strictFallback ? "ON" : "OFF");
-  });
-
-  loadAndRender();
-</script>
+    // 최초 로드
+    loadAndRender();
+  </script>
 </body>
 </html>
