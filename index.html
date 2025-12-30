@@ -1,8 +1,8 @@
 <!doctype html>
 <html lang="ko">
 <head>
-<meta charset="utf-8" />
-<meta name="viewport" content="width=device-width,initial-scale=1" />
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
 <title>CCTV 12권역 모니터링</title>
 
 <style>
@@ -11,95 +11,144 @@
   --panel:rgba(255,255,255,.06);
   --border:rgba(255,255,255,.12);
   --text:#fff;
-  --muted:rgba(255,255,255,.6);
-  --headerH:64px;
-}
-*{box-sizing:border-box}
-html,body{height:100%}
-body{
-  margin:0;
-  background:var(--bg);
-  color:var(--text);
-  font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
-  overflow:hidden; /* ✅ 관제센터 */
+  --muted:rgba(255,255,255,.65);
+  --accent:#8cbf9f;
+  --headerH:60px;
 }
 
-/* ===== HEADER ===== */
+*{ box-sizing:border-box; }
+html,body{ height:100%; margin:0; }
+
+body{
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  overflow:hidden;
+}
+
+/* ================= HEADER ================= */
 header{
   height:var(--headerH);
   display:flex;
   align-items:center;
   justify-content:space-between;
   padding:0 16px;
+  background:rgba(0,0,0,.85);
   border-bottom:1px solid var(--border);
-  background:rgba(11,11,12,.9);
 }
-.title{font-weight:800;font-size:15px}
-.sub{font-size:12px;color:var(--muted)}
+header b{ font-size:15px; }
+header span{ font-size:12px; color:var(--muted); }
 
-/* ===== LAYOUT ===== */
+/* ================= LAYOUT ================= */
 .main{
   height:calc(100vh - var(--headerH));
   display:grid;
-  grid-template-columns: 320px 1fr;
+  grid-template-columns:260px 1fr;
 }
 
-/* ===== LEFT LIST ===== */
+/* ================= LEFT ================= */
 .left{
+  overflow:auto;
   border-right:1px solid var(--border);
-  overflow:auto;               /* ✅ 좌측만 스크롤 */
   background:rgba(255,255,255,.03);
 }
+
 .item{
-  padding:12px 14px;
+  padding:10px 12px;
   border-bottom:1px solid rgba(255,255,255,.06);
   cursor:pointer;
 }
-.item:hover{background:rgba(255,255,255,.06)}
-.item.active{background:rgba(140,191,159,.25)}
-.region{font-weight:700;font-size:13px}
-.note{font-size:11px;color:var(--muted)}
+.item small{
+  display:block;
+  font-size:11px;
+  color:var(--muted);
+}
+.item.active{
+  background:rgba(140,191,159,.18);
+  box-shadow: inset 4px 0 0 var(--accent);
+}
 
-/* ===== RIGHT VIEWER ===== */
+/* ================= RIGHT ================= */
 .right{
   position:relative;
-  height:100%;
-  background:#000;
+  background:
+    radial-gradient(800px 400px at 40% 20%, rgba(255,255,255,.08), transparent 60%),
+    radial-gradient(900px 500px at 70% 70%, rgba(140,191,159,.10), transparent 60%),
+    #000;
 }
+
 .viewer-head{
   height:44px;
   display:flex;
   align-items:center;
   justify-content:space-between;
-  padding:0 12px;
+  padding:0 14px;
   border-bottom:1px solid var(--border);
-  background:rgba(0,0,0,.55);
+  background:rgba(0,0,0,.6);
   font-size:13px;
 }
-iframe{
+
+.stage{
+  height:calc(100% - 44px);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:14px;
+}
+
+.player{
+  width:min(1200px,100%);
+  background:rgba(255,255,255,.06);
+  border:1px solid var(--border);
+  border-radius:14px;
+  overflow:hidden;
+  box-shadow:0 20px 60px rgba(0,0,0,.5);
+}
+
+.ratio{
+  position:relative;
   width:100%;
-  height:calc(100% - 44px); /* ✅ 헤더 제외 */
+  padding-top:56.25%;
+  background:#000;
+}
+.ratio iframe{
+  position:absolute;
+  inset:0;
+  width:100%;
+  height:100%;
   border:0;
   background:#000;
 }
-.btn{
+
+.player-foot{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  padding:12px;
   font-size:12px;
+  color:var(--muted);
+}
+
+.btn{
   padding:6px 10px;
-  border-radius:8px;
+  border-radius:10px;
   border:1px solid var(--border);
   background:rgba(255,255,255,.08);
   color:#fff;
+  cursor:pointer;
+  font-size:12px;
   text-decoration:none;
 }
-.btn:hover{background:rgba(255,255,255,.15)}
+.btn:hover{ background:rgba(255,255,255,.14); }
 </style>
 </head>
 
 <body>
 
 <header>
-  <div class="title">CCTV 12권역 모니터링</div>
-  <div class="sub" id="status">로딩 중…</div>
+  <b>CCTV 12권역 모니터링</b>
+  <span id="status">로딩 중…</span>
 </header>
 
 <div class="main">
@@ -107,10 +156,24 @@ iframe{
 
   <div class="right">
     <div class="viewer-head">
-      <div id="viewerTitle">지역을 선택하세요</div>
-      <a id="openBtn" class="btn" target="_blank" style="display:none">새창</a>
+      <span id="viewerTitle">좌측에서 CCTV 선택</span>
+      <div>
+        <a id="openBtn" class="btn" target="_blank" style="display:none">새창 재생</a>
+        <button id="copyBtn" class="btn" style="display:none">URL 복사</button>
+      </div>
     </div>
-    <iframe id="viewer" src="about:blank"></iframe>
+
+    <div class="stage">
+      <div class="player">
+        <div class="ratio">
+          <iframe id="viewer" src="about:blank"></iframe>
+        </div>
+        <div class="player-foot">
+          <span>※ iframe 차단 시 새창 재생 권장</span>
+          <span>KBS · 경찰청 · 지자체 CCTV</span>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -118,62 +181,52 @@ iframe{
 const CSV_URL =
 "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZZaK8GDz_FZsefh-XoCkPmQhKOugjSRNioC5M8fAUH87iiyQV8KK28wCVN4_dbWJukM-Rbwkkbz_G/pub?gid=1422576665&single=true&output=csv";
 
-const listEl = document.getElementById("list");
+const list = document.getElementById("list");
 const viewer = document.getElementById("viewer");
 const viewerTitle = document.getElementById("viewerTitle");
 const openBtn = document.getElementById("openBtn");
+const copyBtn = document.getElementById("copyBtn");
 const status = document.getElementById("status");
 
-function parseCsv(t){
-  return t.trim().split("\n").map(r=>{
-    const out=[];let c="",q=false;
-    for(let i=0;i<r.length;i++){
-      if(r[i]==='"')q=!q;
-      else if(r[i]===","&&!q){out.push(c);c="";continue}
-      c+=r[i];
-    }
-    out.push(c);return out;
-  });
+function parseCSV(t){
+  return t.trim().split("\n").map(r=>r.split(","));
 }
-
-function clean(s){return String(s||"").replace(/(^"|"$)/g,"").trim()}
 
 async function load(){
   const res = await fetch(CSV_URL,{cache:"no-store"});
   const text = await res.text();
-  const rows = parseCsv(text);
-  const h = rows[0].map(x=>clean(x).toLowerCase());
-  const iRegion = h.indexOf("region")>-1?h.indexOf("region"):0;
-  const iUrl = h.findIndex(x=>x.includes("url")||x.includes("링크"));
-  const iNote = h.findIndex(x=>x.includes("note")||x.includes("비고"));
-
+  const rows = parseCSV(text);
   const data = rows.slice(1).map(r=>({
-    region: clean(r[iRegion]),
-    url: clean(r[iUrl]),
-    note: clean(r[iNote])
-  })).filter(x=>x.region && x.url);
+    region:r[0],
+    url:r[1],
+    note:r[2]||""
+  })).filter(d=>d.region && d.url);
 
-  listEl.innerHTML="";
+  list.innerHTML="";
   data.forEach((d,i)=>{
     const div=document.createElement("div");
     div.className="item";
-    div.innerHTML=`
-      <div class="region">${d.region}</div>
-      <div class="note">${d.note||""}</div>
-    `;
+    div.innerHTML=`<b>${d.region}</b><small>${d.note}</small>`;
     div.onclick=()=>{
       document.querySelectorAll(".item").forEach(x=>x.classList.remove("active"));
       div.classList.add("active");
+
       viewer.src=d.url;
       viewerTitle.textContent=d.region;
       openBtn.href=d.url;
       openBtn.style.display="inline-block";
+      copyBtn.style.display="inline-block";
     };
-    listEl.appendChild(div);
+    list.appendChild(div);
   });
 
-  status.textContent=`총 ${data.length}개 · ${new Date().toLocaleTimeString()}`;
+  status.textContent=`총 ${data.length}개 · ${new Date().toLocaleTimeString("ko-KR")}`;
 }
+
+copyBtn.onclick=async()=>{
+  await navigator.clipboard.writeText(openBtn.href);
+  status.textContent="URL 복사 완료";
+};
 
 load();
 </script>
