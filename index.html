@@ -18,14 +18,15 @@
       --radius:14px;
     }
 
-    html, body { height:100%; }
-    body{
-      margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
-      background:var(--bg);
-      color:var(--text);
-      overflow:hidden; /* ✅ 페이지 자체 스크롤 방지(관제센터 느낌) */
-    }
+ html, body { height:100%; }
+
+body{
+  margin:0;
+  font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  overflow:auto;   /* ✅ 스크롤 허용 → 화면 짤림 해결 */
+}
 
     header{
       position: sticky; top:0; z-index:100;
