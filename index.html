@@ -13,16 +13,14 @@
       --text:#fff;
       --muted: rgba(255,255,255,.65);
       --chip: rgba(255,255,255,.10);
-      --chip2: rgba(255,255,255,.16);
       --radius:14px;
       --gap:10px;
       --headerH: 72px;
     }
-
     *{ box-sizing:border-box; }
     html, body { height:100%; }
 
-    /* ✅ 짤림 방지 핵심: body 스크롤 허용 */
+    /* ✅ 화면 안 잘리게: 페이지는 스크롤 허용 */
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -31,12 +29,6 @@
       overflow:auto;
       padding-top: env(safe-area-inset-top);
       padding-bottom: env(safe-area-inset-bottom);
-    }
-
-    .app{
-      min-height: 100vh;
-      display:flex;
-      flex-direction:column;
     }
 
     header{
@@ -57,48 +49,35 @@
     }
 
     .title{
-      font-weight: 750;
+      font-weight: 800;
       letter-spacing: -0.2px;
       font-size: 16px;
       white-space:nowrap;
     }
-
     .muted{ color: var(--muted); font-size:12px; }
-
     .spacer{ flex:1; }
 
     .btn{
       border:1px solid var(--border);
-      background: var(--panel);
+      background: rgba(255,255,255,.06);
       color: var(--text);
       padding: 9px 12px;
       border-radius: 12px;
       cursor:pointer;
-      font-weight:600;
+      font-weight:700;
+      text-decoration:none;
+      display:inline-flex;
+      align-items:center;
+      justify-content:center;
+      gap:8px;
     }
     .btn:hover{ background: rgba(255,255,255,.10); }
-    .btn:disabled{ opacity:.55; cursor:not-allowed; }
 
-    main{
-      flex:1 1 auto;
-      min-height:0;
-      padding: 14px;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns: 360px 1fr;
-      gap: var(--gap);
-      min-height: calc(100vh - var(--headerH) - 28px);
-    }
-
-    @media (max-width: 980px){
-      .grid{ grid-template-columns: 1fr; }
-    }
+    main{ padding: 14px; }
 
     .panel{
       border:1px solid var(--border);
-      background: var(--panel);
+      background: rgba(255,255,255,.06);
       border-radius: var(--radius);
       overflow:hidden;
     }
@@ -112,49 +91,10 @@
     }
 
     .panel-title{
-      font-weight: 750;
+      font-weight: 800;
       font-size: 14px;
     }
 
-    .panel-bd{
-      padding: 12px;
-    }
-
-    /* 좌측 리스트는 패널 안에서 스크롤 */
-    .list-wrap{
-      height: 100%;
-      display:flex;
-      flex-direction:column;
-      min-height:0;
-    }
-    .list{
-      padding: 10px;
-      display:flex;
-      flex-direction:column;
-      gap: 8px;
-      overflow:auto;      /* ✅ 여기서 스크롤 */
-      min-height:0;
-    }
-
-    .item{
-      border:1px solid var(--border);
-      border-radius: 12px;
-      padding: 10px;
-      background: rgba(255,255,255,.04);
-      cursor:pointer;
-      display:flex;
-      flex-direction:column;
-      gap:6px;
-    }
-    .item:hover{ background: rgba(255,255,255,.07); }
-    .item.active{ outline: 2px solid rgba(140,191,159,.55); }
-
-    .item-top{
-      display:flex;
-      align-items:center;
-      justify-content:space-between;
-      gap:10px;
-    }
     .badge{
       font-size: 11px;
       padding: 4px 8px;
@@ -164,91 +104,98 @@
       color: var(--muted);
       white-space:nowrap;
     }
-    .name{ font-weight: 750; font-size: 13px; }
-    .sub{ font-size: 12px; color: var(--muted); }
 
     .toolbar{
       display:flex;
       gap:8px;
-      padding: 10px;
-      border-top:1px solid var(--border);
+      padding: 10px 12px;
+      border-bottom:1px solid var(--border);
       background: rgba(255,255,255,.03);
+      flex-wrap:wrap;
     }
     .input{
-      flex:1;
+      flex:1 1 260px;
       border:1px solid var(--border);
       background: rgba(0,0,0,.25);
       color: var(--text);
       padding: 10px 12px;
       border-radius: 12px;
       outline:none;
+      min-width: 220px;
     }
 
-    /* 우측 플레이어 영역 */
-    .player-wrap{
-      height: 100%;
-      display:flex;
-      flex-direction:column;
-      min-height:0;
-    }
-    .player-bd{
-      padding:0;
-      height: 100%;
-      min-height:0;
-      display:flex;
-      flex-direction:column;
-    }
-
-    /* ✅ 팝업/모달 없음. 안내는 패널 내부에만 “작게” */
-    .inline-note{
+    /* ✅ 관제형 그리드 */
+    .wall{
       padding: 12px;
-      border-top:1px solid var(--border);
-      background: rgba(255,255,255,.03);
+      display:grid;
+      gap: 10px;
+      grid-template-columns: repeat(4, minmax(240px, 1fr));
+    }
+    @media (max-width: 1400px){ .wall{ grid-template-columns: repeat(3, minmax(220px, 1fr)); } }
+    @media (max-width: 980px){  .wall{ grid-template-columns: repeat(2, minmax(200px, 1fr)); } }
+    @media (max-width: 560px){  .wall{ grid-template-columns: 1fr; } }
+
+    .card{
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.04);
+      border-radius: 14px;
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
+      min-height: 190px;
+    }
+    .card-hd{
+      padding: 10px 10px 8px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .card-title{
+      font-weight: 850;
+      font-size: 13px;
+      line-height: 1.25;
+    }
+    .card-sub{
       color: var(--muted);
       font-size: 12px;
-      display:none;
-      gap:8px;
+      margin-top: 4px;
+      line-height: 1.3;
+    }
+    .card-body{
+      flex:1;
+      padding: 10px;
+      display:flex;
       align-items:center;
-      justify-content:space-between;
+      justify-content:center;
+      color: var(--muted);
+      font-size: 12px;
+      text-align:center;
+      line-height: 1.4;
     }
-    .inline-note.show{ display:flex; }
-
-    .inline-note a{
-      color: #bfe9d0;
-      text-decoration:none;
-      font-weight:700;
+    .card-actions{
+      padding: 10px;
+      border-top:1px solid var(--border);
+      display:flex;
+      gap:8px;
     }
+    .card-actions a{ flex:1; }
 
-    iframe{
-      border:0;
-      width: 100%;
-      height: 100%;
-      min-height: 520px;
-      background:#000;
-    }
-
-    /* 작은 상태줄 */
     .status{
       padding: 10px 12px;
       border-top:1px solid var(--border);
       background: rgba(255,255,255,.03);
       font-size: 12px;
       color: var(--muted);
-    }
-    .row{ display:flex; gap:8px; flex-wrap:wrap; }
-    .chip{
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.05);
-      border-radius: 999px;
-      padding: 5px 9px;
-      font-size: 11px;
-      color: var(--muted);
+      display:flex;
+      gap:8px;
+      flex-wrap:wrap;
     }
   </style>
 </head>
 
 <body>
-<div class="app">
   <header>
     <div class="header-inner">
       <div>
@@ -261,71 +208,36 @@
   </header>
 
   <main>
-    <div class="grid">
+    <section class="panel">
+      <div class="panel-hd">
+        <div class="panel-title">관제 화면</div>
+        <div class="spacer"></div>
+        <span class="badge" id="countBadge">0</span>
+      </div>
 
-      <!-- LEFT -->
-      <section class="panel list-wrap">
-        <div class="panel-hd">
-          <div class="panel-title">지역 목록</div>
-          <div class="spacer"></div>
-          <span class="badge" id="countBadge">0</span>
-        </div>
+      <div class="toolbar">
+        <input class="input" id="q" placeholder="검색: 지역/카메라명/제공처" />
+        <button class="btn" id="btnClear">초기화</button>
+      </div>
 
-        <div class="toolbar">
-          <input class="input" id="q" placeholder="검색: 지역/카메라명/제공처" />
-          <button class="btn" id="btnClear" title="검색 초기화">초기화</button>
-        </div>
+      <div class="wall" id="wall"></div>
 
-        <div class="list" id="list"></div>
-
-        <div class="status">
-          <div class="row">
-            <span class="chip">✅ 팝업 경고 없음</span>
-            <span class="chip">✅ 화면 짤림 방지(스크롤 OK)</span>
-            <span class="chip">🔗 iframe 차단 CCTV는 ‘새 탭’로 안내</span>
-          </div>
-        </div>
-      </section>
-
-      <!-- RIGHT -->
-      <section class="panel player-wrap">
-        <div class="panel-hd">
-          <div class="panel-title" id="playerTitle">카메라를 선택하세요</div>
-          <div class="spacer"></div>
-          <a class="btn" id="btnOpen" href="#" target="_blank" rel="noopener noreferrer" style="text-decoration:none; display:none;">새 탭 열기</a>
-        </div>
-
-        <div class="player-bd" style="flex:1; min-height:0;">
-          <iframe id="player" title="CCTV Player" src="about:blank"></iframe>
-          <!-- ✅ 팝업 X, 패널 하단 ‘작은 안내’만 -->
-          <div class="inline-note" id="inlineNote">
-            <span>이 CCTV는 제공처 정책으로 화면 내 삽입이 제한될 수 있어요.</span>
-            <a id="inlineOpen" href="#" target="_blank" rel="noopener noreferrer">새 탭에서 보기</a>
-          </div>
-        </div>
-      </section>
-
-    </div>
+      <div class="status">
+        <span class="badge">✅ 화면 안 잘림(스크롤 OK)</span>
+        <span class="badge">✅ 페이지 내 경고창/모달 없음</span>
+        <span class="badge">🔗 CCTV는 새 탭으로 열기(iframe 차단 회피)</span>
+      </div>
+    </section>
   </main>
-</div>
 
 <script>
-  /**
-   * =========================
-   * ✅ 여기 2개만 너가 맞게 수정
-   * =========================
-   */
+  // ✅ 너가 쓰는 구글시트 CSV URL(그대로 유지)
   const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZZaK8GDz_FZsefh-XoCkPmQhKOugjSRNioC5M8fAUH87iiyQV8KK28wCVN4_dbWJukM-Rbwkkbz_G/pub?gid=1422576665&single=true&output=csv";
-
-  // CCTV 목록을 JSON으로 가지고 있다면(추천): "data/cctv.json"
-  // 없다면, 일단 비워두면 CSV만으로도 페이지는 동작(리스트는 비어있을 수 있음)
-  const CCTV_JSON_URL = "data/cctv.json";
 
   let allCctv = [];
   let filtered = [];
-  let selectedIdx = -1;
 
-  const CCTV_JSON_URL = "";
+  const $ = (id) => document.getElementById(id);
 
   function setUpdatedText(){
     const now = new Date();
@@ -334,8 +246,16 @@
       `마지막 새로고침: ${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
   }
 
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
+  }
+
   function parseCsv(text){
-    // 간단 CSV 파서 (따옴표 포함 기본 대응)
     const rows = [];
     let cur = "", row = [], inQ = false;
     for (let i=0;i<text.length;i++){
@@ -346,7 +266,6 @@
       if (!inQ && (ch === '\n' || ch === '\r')){
         if (cur.length || row.length){ row.push(cur); rows.push(row); }
         cur=""; row=[];
-        // CRLF 처리
         if (ch === '\r' && next === '\n') i++;
         continue;
       }
@@ -363,208 +282,129 @@
     return parseCsv(text);
   }
 
-  async function fetchCctvJson(){
-    if (!CCTV_JSON_URL) return [];
-    try{
-      const res = await fetch(CCTV_JSON_URL, { cache:"no-store" });
-      if (!res.ok) return [];
-      const json = await res.json();
-
-      // json이 {"서울 종로구":[{...},{...}], ...} 형태든
-      // [{...},{...}] 배열 형태든 둘 다 지원
-      const out = [];
-      if (Array.isArray(json)) return json;
-
-      if (json && typeof json === "object"){
-        for (const k of Object.keys(json)){
-          const arr = json[k];
-          if (Array.isArray(arr)){
-            arr.forEach(x => out.push({ region: k, ...x }));
-          }
-        }
-      }
-      return out;
-    }catch(e){
-      return [];
-    }
-  }
-
-  function normalizeCctv(item){
-    // 예상 필드: region, name, provider, url
-    const region = item.region || item.Region || item.지역 || "";
-    const name = item.name || item.Name || item.카메라명 || item.title || "CCTV";
-    const provider = item.provider || item.Provider || item.제공처 || "";
-    const url = item.url || item.URL || item.link || "";
-    return { region, name, provider, url };
-  }
-
-  function renderList(){
-    const list = $("list");
-    list.innerHTML = "";
-
-    $("countBadge").textContent = `${filtered.length}개`;
-
-    filtered.forEach((raw, idx) => {
-      const it = normalizeCctv(raw);
-      const div = document.createElement("div");
-      div.className = "item" + (idx === selectedIdx ? " active" : "");
-      div.onclick = () => select(idx);
-
-      div.innerHTML = `
-        <div class="item-top">
-          <div class="name">${escapeHtml(it.name)}</div>
-          <span class="badge">${escapeHtml(it.provider || "CCTV")}</span>
-        </div>
-        <div class="sub">${escapeHtml(it.region || "")}</div>
-      `;
-      list.appendChild(div);
-    });
-  }
-
-  function escapeHtml(s){
-    return String(s ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
+  function normalizeCctv(obj){
+    const clean = (s) => String(s ?? "").replace(/^\uFEFF/, "").trim();
+    return {
+      region: clean(obj.region || obj.Region || obj.지역 || obj.시군구 || ""),
+      name: clean(obj.name || obj.Name || obj.카메라명 || obj.title || "CCTV"),
+      provider: clean(obj.provider || obj.Provider || obj.제공처 || obj.출처 || ""),
+      url: clean(obj.url || obj.URL || obj.link || obj.링크 || obj.주소 || "")
+    };
   }
 
   function applyFilter(){
     const q = $("q").value.trim().toLowerCase();
-    if (!q){
-      filtered = [...allCctv];
-    }else{
-      filtered = allCctv.filter(x => {
-        const it = normalizeCctv(x);
-        return (
-          (it.region||"").toLowerCase().includes(q) ||
-          (it.name||"").toLowerCase().includes(q) ||
-          (it.provider||"").toLowerCase().includes(q) ||
-          (it.url||"").toLowerCase().includes(q)
-        );
-      });
-    }
-    selectedIdx = -1;
-    $("playerTitle").textContent = "카메라를 선택하세요";
-    $("player").src = "about:blank";
-    $("btnOpen").style.display = "none";
-    $("inlineNote").classList.remove("show");
-    renderList();
+    filtered = !q ? [...allCctv] : allCctv.filter(x => {
+      const it = normalizeCctv(x);
+      return (
+        (it.region||"").toLowerCase().includes(q) ||
+        (it.name||"").toLowerCase().includes(q) ||
+        (it.provider||"").toLowerCase().includes(q) ||
+        (it.url||"").toLowerCase().includes(q)
+      );
+    });
+    renderWall();
   }
 
-  function select(idx){
-    selectedIdx = idx;
-    renderList();
+  function renderWall(){
+    const wall = $("wall");
+    wall.innerHTML = "";
+    $("countBadge").textContent = `${filtered.length}개`;
 
-    const it = normalizeCctv(filtered[idx]);
-    $("playerTitle").textContent = `${it.region ? it.region + " · " : ""}${it.name}`;
-    const url = it.url || "about:blank";
+    filtered.forEach((raw) => {
+      const it = normalizeCctv(raw);
+      const url = it.url || "#";
 
-    // 새탭 링크
-    $("btnOpen").href = url;
-    $("btnOpen").style.display = url && url !== "about:blank" ? "inline-flex" : "none";
-    $("inlineOpen").href = url;
+      const card = document.createElement("div");
+      card.className = "card";
 
-    // ✅ 팝업(모달) 없음.
-    // iframe 차단은 "감지"가 완벽하진 않아서,
-    // 대신 '정상적으로 안 보일 수 있음'을 패널 하단에만 조용히 표시.
-    // (원하면 이 안내도 완전히 끌 수 있음)
-    $("inlineNote").classList.add("show");
+      card.innerHTML = `
+        <div class="card-hd">
+          <div>
+            <div class="card-title">${escapeHtml(it.name || "CCTV")}</div>
+            <div class="card-sub">${escapeHtml(it.region)}${it.provider ? " · " + escapeHtml(it.provider) : ""}</div>
+          </div>
+          <span class="badge">CCTV</span>
+        </div>
 
-    // iframe 로딩
-    $("player").src = url;
+        <div class="card-body">
+          제공처 정책(iframe 차단) 때문에<br/>
+          화면 내 재생 대신 ‘새 탭 열기’로 확인합니다.
+        </div>
+
+        <div class="card-actions">
+          <a class="btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">새 탭 열기</a>
+        </div>
+      `;
+      wall.appendChild(card);
+    });
   }
 
-async function load(){
-  setUpdatedText();
+  async function load(){
+    setUpdatedText();
 
-  const rows = await fetchCsv();
-  if (!rows || rows.length < 2) throw new Error("CSV 행이 없습니다.");
+    const rows = await fetchCsv();
+    if (!rows || rows.length < 2) throw new Error("CSV 행이 없습니다.");
 
-  // ✅ BOM 제거 + 소문자화
-  const clean = (s) => String(s ?? "").replace(/^\uFEFF/, "").trim();
-  const header = (rows[0] || []).map(h => clean(h).toLowerCase());
-  const dataRows = rows.slice(1).filter(r => r && r.join("").trim().length);
+    const clean = (s) => String(s ?? "").replace(/^\uFEFF/, "").trim();
+    const header = (rows[0] || []).map(h => clean(h).toLowerCase());
+    const dataRows = rows.slice(1).filter(r => r && r.join("").trim().length);
 
-  const idxByNames = (names) => {
-    for (const n of names){
-      const i = header.indexOf(n);
-      if (i >= 0) return i;
-    }
-    return -1;
-  };
-
-  // 1) 헤더명으로 먼저 찾기(확장)
-  let iRegion   = idxByNames(["region","지역","권역","시군구","지역명","구/군","구군"]);
-  let iName     = idxByNames(["name","카메라명","cctv명","지점명","title","명칭","카메라","cctv"]);
-  let iProvider = idxByNames(["provider","제공처","출처","기관","소스"]);
-  let iUrl      = idxByNames(["url","링크","link","주소","바로가기","cctv url","cctv링크","cctv주소"]);
-
-  // 2) ✅ URL 컬럼을 헤더로 못 찾으면 "값이 http로 시작하는 컬럼" 자동탐색
-  if (iUrl < 0){
-    const sample = dataRows.slice(0, 10); // 앞 10행만 보고 판단
-    const colCount = Math.max(...sample.map(r => r.length));
-    let best = -1, bestScore = 0;
-
-    for (let c = 0; c < colCount; c++){
-      let score = 0;
-      for (const r of sample){
-        const v = clean(r[c]);
-        if (/^https?:\/\//i.test(v)) score++;
+    const idxByNames = (names) => {
+      for (const n of names){
+        const i = header.indexOf(n);
+        if (i >= 0) return i;
       }
-      if (score > bestScore){
-        bestScore = score;
-        best = c;
+      return -1;
+    };
+
+    // 헤더명 우선 탐색
+    let iRegion   = idxByNames(["region","지역","권역","시군구","지역명"]);
+    let iName     = idxByNames(["name","카메라명","cctv명","지점명","title","명칭"]);
+    let iProvider = idxByNames(["provider","제공처","출처","기관","소스"]);
+    let iUrl      = idxByNames(["url","링크","link","주소","바로가기","cctv url","cctv링크","cctv주소"]);
+
+    // URL 자동 탐색(값이 http로 시작하는 컬럼)
+    if (iUrl < 0){
+      const sample = dataRows.slice(0, 10);
+      const colCount = Math.max(...sample.map(r => r.length));
+      let best = -1, bestScore = 0;
+      for (let c = 0; c < colCount; c++){
+        let score = 0;
+        for (const r of sample){
+          const v = clean(r[c]);
+          if (/^https?:\/\//i.test(v)) score++;
+        }
+        if (score > bestScore){ bestScore = score; best = c; }
       }
+      iUrl = bestScore > 0 ? best : -1;
     }
-    iUrl = bestScore > 0 ? best : -1;
-  }
 
-  // 3) 그래도 URL을 못 찾으면 화면에 "헤더"를 보여주고 멈추기
-  if (iUrl < 0){
-    $("lastUpdated").textContent = "CSV 헤더에서 URL 컬럼을 못 찾았어요. (콘솔 F12 확인)";
-    console.log("CSV HEADER:", header);
-    allCctv = [{
-      region: "CSV 헤더 확인 필요",
-      name: "F12 → Console에서 CSV HEADER 확인",
-      provider: "INFO",
-      url: "https://www.google.com"
-    }];
-    filtered = [...allCctv];
-    selectedIdx = -1;
-    renderList();
-    return;
-  }
+    if (iUrl < 0){
+      console.log("CSV HEADER:", header);
+      $("lastUpdated").textContent = "CSV에서 URL 컬럼을 못 찾았어요. (F12 Console의 CSV HEADER 확인)";
+      allCctv = [];
+      filtered = [];
+      renderWall();
+      return;
+    }
 
-  // 4) 목록 생성 (Region/Name은 없으면 빈칸/기본값 허용)
-  allCctv = dataRows.map((r) => ({
+    allCctv = dataRows.map(r => ({
       region:   iRegion   >= 0 ? clean(r[iRegion]) : "",
       name:     iName     >= 0 ? clean(r[iName]) : "CCTV",
       provider: iProvider >= 0 ? clean(r[iProvider]) : "",
       url:      clean(r[iUrl])
     }))
-    .filter(x => /^https?:\/\//i.test(x.url)); // ✅ 진짜 URL만
+    .filter(x => /^https?:\/\//i.test(x.url));
 
-  if (allCctv.length === 0){
-    allCctv = [{
-      region: "CSV는 읽혔는데",
-      name: "URL 값이 비어있거나 http가 아닙니다",
-      provider: "INFO",
-      url: "https://www.google.com"
-    }];
+    filtered = [...allCctv];
+    renderWall();
   }
-
-  filtered = [...allCctv];
-  selectedIdx = -1;
-  renderList();
-}
 
   $("btnReload").addEventListener("click", () => load().catch(console.error));
   $("btnClear").addEventListener("click", () => { $("q").value=""; applyFilter(); });
   $("q").addEventListener("input", applyFilter);
 
-  // 첫 로딩
   load().catch(err => {
     console.error(err);
     $("lastUpdated").textContent = "로딩 실패: " + (err?.message || err);
