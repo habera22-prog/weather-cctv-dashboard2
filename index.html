@@ -476,26 +476,51 @@
     $("player").src = url;
   }
 
-  async function load(){
-    setUpdatedText();
+async function load(){
+  setUpdatedText();
 
-    // CCTV 목록 로딩(가능하면 json)
-    const cctv = await fetchCctvJson();
-    allCctv = cctv.map(normalizeCctv);
+  // ✅ CSV로부터 CCTV 목록 생성
+  const rows = await fetchCsv();       // rows[0] = header
+  const header = (rows[0] || []).map(h => (h || "").trim().toLowerCase());
+  const dataRows = rows.slice(1).filter(r => r && r.join("").trim().length);
 
-    // json 없어서 비어있으면: 최소 샘플 1개라도 표시(원하면 삭제 가능)
-    if (allCctv.length === 0){
-      allCctv = [{
-        region: "샘플",
-        name: "UTIC 메인(샘플)",
-        provider: "UTIC",
-        url: "https://www.utic.go.kr/"
-      }];
+  // 헤더 이름을 다양한 케이스로 지원
+  const idx = (names) => {
+    for (const n of names){
+      const i = header.indexOf(n);
+      if (i >= 0) return i;
     }
+    return -1;
+  };
 
-    filtered = [...allCctv];
-    renderList();
+  const iRegion   = idx(["region", "지역", "권역", "시군구"]);
+  const iName     = idx(["name", "카메라명", "cctv명", "지점명", "title"]);
+  const iProvider = idx(["provider", "제공처", "출처"]);
+  const iUrl      = idx(["url", "링크", "link"]);
+
+  allCctv = dataRows.map(r => ({
+    region:   iRegion   >= 0 ? (r[iRegion]   || "").trim() : "",
+    name:     iName     >= 0 ? (r[iName]     || "").trim() : "CCTV",
+    provider: iProvider >= 0 ? (r[iProvider] || "").trim() : "",
+    url:      iUrl      >= 0 ? (r[iUrl]      || "").trim() : ""
+  }))
+  .filter(x => x.url); // url 없는 행은 제외
+
+  // CSV가 비었거나 컬럼명이 안 맞아도 최소 안내
+  if (allCctv.length === 0){
+    allCctv = [{
+      region: "CSV 오류/빈 데이터",
+      name: "대표CCTV 시트 컬럼명을 확인하세요",
+      provider: "INFO",
+      url: "https://www.google.com"
+    }];
   }
+
+  filtered = [...allCctv];
+  selectedIdx = -1;
+  renderList();
+}
+
 
   $("btnReload").addEventListener("click", () => load().catch(console.error));
   $("btnClear").addEventListener("click", () => { $("q").value=""; applyFilter(); });
