@@ -12,15 +12,14 @@
       --border: rgba(255,255,255,.12);
       --text:#fff;
       --muted: rgba(255,255,255,.65);
-      --chip: rgba(255,255,255,.10);
       --radius:14px;
       --gap:10px;
-      --headerH: 72px;
+      --headerH:72px;
     }
     *{ box-sizing:border-box; }
     html, body { height:100%; }
 
-    /* ✅ 화면 안 잘리게: 페이지는 스크롤 허용 */
+    /* ✅ 관제처럼: 페이지 자체는 스크롤 허용(짤림 방지) */
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -39,7 +38,6 @@
       background: rgba(11,11,12,.65);
       border-bottom: 1px solid var(--border);
     }
-
     .header-inner{
       height: var(--headerH);
       display:flex;
@@ -47,13 +45,7 @@
       gap:12px;
       padding: 0 14px;
     }
-
-    .title{
-      font-weight: 800;
-      letter-spacing: -0.2px;
-      font-size: 16px;
-      white-space:nowrap;
-    }
+    .title{ font-weight: 850; font-size: 16px; white-space:nowrap; }
     .muted{ color: var(--muted); font-size:12px; }
     .spacer{ flex:1; }
 
@@ -64,16 +56,11 @@
       padding: 9px 12px;
       border-radius: 12px;
       cursor:pointer;
-      font-weight:700;
-      text-decoration:none;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
-      gap:8px;
+      font-weight:750;
     }
     .btn:hover{ background: rgba(255,255,255,.10); }
 
-    main{ padding: 14px; }
+    main{ padding:14px; }
 
     .panel{
       border:1px solid var(--border);
@@ -81,7 +68,6 @@
       border-radius: var(--radius);
       overflow:hidden;
     }
-
     .panel-hd{
       padding: 12px 12px 10px;
       border-bottom:1px solid var(--border);
@@ -89,18 +75,13 @@
       align-items:center;
       gap:10px;
     }
-
-    .panel-title{
-      font-weight: 800;
-      font-size: 14px;
-    }
-
+    .panel-title{ font-weight:850; font-size:14px; }
     .badge{
       font-size: 11px;
       padding: 4px 8px;
       border-radius: 999px;
       border:1px solid var(--border);
-      background: var(--chip);
+      background: rgba(255,255,255,.10);
       color: var(--muted);
       white-space:nowrap;
     }
@@ -115,36 +96,36 @@
     }
     .input{
       flex:1 1 260px;
+      min-width: 220px;
       border:1px solid var(--border);
       background: rgba(0,0,0,.25);
       color: var(--text);
       padding: 10px 12px;
       border-radius: 12px;
       outline:none;
-      min-width: 220px;
     }
 
-    /* ✅ 관제형 그리드 */
+    /* ✅ 관제형 멀티뷰 그리드 */
     .wall{
       padding: 12px;
       display:grid;
-      gap: 10px;
-      grid-template-columns: repeat(4, minmax(240px, 1fr));
+      gap: var(--gap);
+      grid-template-columns: repeat(4, minmax(260px, 1fr));
     }
-    @media (max-width: 1400px){ .wall{ grid-template-columns: repeat(3, minmax(220px, 1fr)); } }
-    @media (max-width: 980px){  .wall{ grid-template-columns: repeat(2, minmax(200px, 1fr)); } }
+    @media (max-width: 1400px){ .wall{ grid-template-columns: repeat(3, minmax(240px, 1fr)); } }
+    @media (max-width: 980px){  .wall{ grid-template-columns: repeat(2, minmax(220px, 1fr)); } }
     @media (max-width: 560px){  .wall{ grid-template-columns: 1fr; } }
 
-    .card{
+    .tile{
       border:1px solid var(--border);
       background: rgba(255,255,255,.04);
       border-radius: 14px;
       overflow:hidden;
       display:flex;
       flex-direction:column;
-      min-height: 190px;
+      min-height: 260px;
     }
-    .card-hd{
+    .tile-hd{
       padding: 10px 10px 8px;
       border-bottom:1px solid var(--border);
       display:flex;
@@ -152,46 +133,47 @@
       justify-content:space-between;
       gap:10px;
     }
-    .card-title{
-      font-weight: 850;
-      font-size: 13px;
-      line-height: 1.25;
-    }
-    .card-sub{
-      color: var(--muted);
-      font-size: 12px;
-      margin-top: 4px;
-      line-height: 1.3;
-    }
-    .card-body{
+    .tile-title{ font-weight: 850; font-size: 13px; line-height:1.25; }
+    .tile-sub{ color: var(--muted); font-size: 12px; margin-top:4px; line-height:1.3; }
+
+    .frame-wrap{
+      position: relative;
       flex:1;
+      min-height: 210px;
+      background:#000;
+    }
+
+    /* ✅ iframe이 “잘려 보이는 느낌” 줄이기: 전체 꽉 채우기 */
+    iframe{
+      position:absolute;
+      inset:0;
+      width:100%;
+      height:100%;
+      border:0;
+      background:#000;
+    }
+
+    .tile-actions{
       padding: 10px;
+      border-top:1px solid var(--border);
       display:flex;
+      gap:8px;
+    }
+    .tile-actions a{
+      flex:1;
+      text-align:center;
+      text-decoration:none;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,.06);
+      color: var(--text);
+      padding: 9px 12px;
+      border-radius: 12px;
+      font-weight:800;
+      display:inline-flex;
       align-items:center;
       justify-content:center;
-      color: var(--muted);
-      font-size: 12px;
-      text-align:center;
-      line-height: 1.4;
     }
-    .card-actions{
-      padding: 10px;
-      border-top:1px solid var(--border);
-      display:flex;
-      gap:8px;
-    }
-    .card-actions a{ flex:1; }
-
-    .status{
-      padding: 10px 12px;
-      border-top:1px solid var(--border);
-      background: rgba(255,255,255,.03);
-      font-size: 12px;
-      color: var(--muted);
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
+    .tile-actions a:hover{ background: rgba(255,255,255,.10); }
   </style>
 </head>
 
@@ -210,7 +192,7 @@
   <main>
     <section class="panel">
       <div class="panel-hd">
-        <div class="panel-title">관제 화면</div>
+        <div class="panel-title">관제 화면(멀티뷰)</div>
         <div class="spacer"></div>
         <span class="badge" id="countBadge">0</span>
       </div>
@@ -221,17 +203,10 @@
       </div>
 
       <div class="wall" id="wall"></div>
-
-      <div class="status">
-        <span class="badge">✅ 화면 안 잘림(스크롤 OK)</span>
-        <span class="badge">✅ 페이지 내 경고창/모달 없음</span>
-        <span class="badge">🔗 CCTV는 새 탭으로 열기(iframe 차단 회피)</span>
-      </div>
     </section>
   </main>
 
 <script>
-  // ✅ 너가 쓰는 구글시트 CSV URL(그대로 유지)
   const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZZaK8GDz_FZsefh-XoCkPmQhKOugjSRNioC5M8fAUH87iiyQV8KK28wCVN4_dbWJukM-Rbwkkbz_G/pub?gid=1422576665&single=true&output=csv";
 
   let allCctv = [];
@@ -313,30 +288,30 @@
 
     filtered.forEach((raw) => {
       const it = normalizeCctv(raw);
-      const url = it.url || "#";
+      const url = it.url || "about:blank";
 
-      const card = document.createElement("div");
-      card.className = "card";
+      const tile = document.createElement("div");
+      tile.className = "tile";
 
-      card.innerHTML = `
-        <div class="card-hd">
+      tile.innerHTML = `
+        <div class="tile-hd">
           <div>
-            <div class="card-title">${escapeHtml(it.name || "CCTV")}</div>
-            <div class="card-sub">${escapeHtml(it.region)}${it.provider ? " · " + escapeHtml(it.provider) : ""}</div>
+            <div class="tile-title">${escapeHtml(it.name || "CCTV")}</div>
+            <div class="tile-sub">${escapeHtml(it.region)}${it.provider ? " · " + escapeHtml(it.provider) : ""}</div>
           </div>
-          <span class="badge">CCTV</span>
+          <span class="badge">LIVE</span>
         </div>
 
-        <div class="card-body">
-          제공처 정책(iframe 차단) 때문에<br/>
-          화면 내 재생 대신 ‘새 탭 열기’로 확인합니다.
+        <div class="frame-wrap">
+          <iframe loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
+                  src="${escapeHtml(url)}" title="${escapeHtml(it.name || "CCTV")}"></iframe>
         </div>
 
-        <div class="card-actions">
-          <a class="btn" href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">새 탭 열기</a>
+        <div class="tile-actions">
+          <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">새 탭 열기</a>
         </div>
       `;
-      wall.appendChild(card);
+      wall.appendChild(tile);
     });
   }
 
@@ -358,13 +333,11 @@
       return -1;
     };
 
-    // 헤더명 우선 탐색
     let iRegion   = idxByNames(["region","지역","권역","시군구","지역명"]);
     let iName     = idxByNames(["name","카메라명","cctv명","지점명","title","명칭"]);
     let iProvider = idxByNames(["provider","제공처","출처","기관","소스"]);
     let iUrl      = idxByNames(["url","링크","link","주소","바로가기","cctv url","cctv링크","cctv주소"]);
 
-    // URL 자동 탐색(값이 http로 시작하는 컬럼)
     if (iUrl < 0){
       const sample = dataRows.slice(0, 10);
       const colCount = Math.max(...sample.map(r => r.length));
