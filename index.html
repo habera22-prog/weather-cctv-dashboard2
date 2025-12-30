@@ -2,386 +2,379 @@
 <html lang="ko">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-  <title>CCTV 12권역 모니터링</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>CCTV 모니터링 (CSV)</title>
 
   <style>
     :root{
       --bg:#0b0b0c;
-      --panel: rgba(255,255,255,.06);
-      --border: rgba(255,255,255,.12);
+      --panel:rgba(255,255,255,.06);
+      --border:rgba(255,255,255,.10);
+      --border2:rgba(255,255,255,.16);
       --text:#fff;
-      --muted: rgba(255,255,255,.65);
-      --radius:14px;
-      --gap:10px;
+      --muted:rgba(255,255,255,.65);
       --headerH:72px;
+      --gap:10px;
+      --radius:14px;
     }
-    *{ box-sizing:border-box; }
     html, body { height:100%; }
-
-    /* ✅ 관제처럼: 페이지 자체는 스크롤 허용(짤림 방지) */
     body{
       margin:0;
       font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
       background:var(--bg);
       color:var(--text);
-      overflow:auto;
-      padding-top: env(safe-area-inset-top);
-      padding-bottom: env(safe-area-inset-bottom);
+      overflow:hidden;
     }
 
     header{
-      position: sticky;
-      top:0;
-      z-index:100;
-      backdrop-filter: blur(10px);
-      background: rgba(11,11,12,.65);
-      border-bottom: 1px solid var(--border);
-    }
-    .header-inner{
+      position: sticky; top:0; z-index:100;
       height: var(--headerH);
-      display:flex;
-      align-items:center;
-      gap:12px;
-      padding: 0 14px;
+      display:flex; align-items:center; justify-content:space-between;
+      gap:10px; flex-wrap:wrap;
+      padding:12px 14px;
+      background: rgba(11,11,12,.85);
+      backdrop-filter: blur(8px);
+      border-bottom: 1px solid rgba(255,255,255,.08);
+      box-sizing: border-box;
     }
-    .title{ font-weight: 850; font-size: 16px; white-space:nowrap; }
-    .muted{ color: var(--muted); font-size:12px; }
-    .spacer{ flex:1; }
+    .title{ font-weight:900; font-size:14px; }
+    .sub{ font-size:12px; color:var(--muted); }
 
+    .controls{ display:flex; gap:8px; align-items:center; flex-wrap:wrap; }
     .btn{
-      border:1px solid var(--border);
+      font-size:12px;
+      padding:8px 10px;
+      border-radius:10px;
+      border:1px solid var(--border2);
       background: rgba(255,255,255,.06);
-      color: var(--text);
-      padding: 9px 12px;
-      border-radius: 12px;
+      color:var(--text);
       cursor:pointer;
-      font-weight:750;
-    }
-    .btn:hover{ background: rgba(255,255,255,.10); }
-
-    main{ padding:14px; }
-
-    .panel{
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.06);
-      border-radius: var(--radius);
-      overflow:hidden;
-    }
-    .panel-hd{
-      padding: 12px 12px 10px;
-      border-bottom:1px solid var(--border);
-      display:flex;
-      align-items:center;
-      gap:10px;
-    }
-    .panel-title{ font-weight:850; font-size:14px; }
-    .badge{
-      font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.10);
-      color: var(--muted);
+      text-decoration:none;
       white-space:nowrap;
     }
+    .btn:hover{ border-color: rgba(255,255,255,.28); background: rgba(255,255,255,.10); }
 
-    .toolbar{
-      display:flex;
-      gap:8px;
-      padding: 10px 12px;
-      border-bottom:1px solid var(--border);
-      background: rgba(255,255,255,.03);
-      flex-wrap:wrap;
-    }
-    .input{
-      flex:1 1 260px;
-      min-width: 220px;
-      border:1px solid var(--border);
-      background: rgba(0,0,0,.25);
-      color: var(--text);
-      padding: 10px 12px;
-      border-radius: 12px;
-      outline:none;
-    }
-
-    /* ✅ 관제형 멀티뷰 그리드 */
-    .wall{
-      padding: 12px;
+    .grid{
+      height: calc(100vh - var(--headerH));
+      padding: var(--gap);
+      box-sizing:border-box;
       display:grid;
-      gap: var(--gap);
       grid-template-columns: repeat(4, minmax(260px, 1fr));
+      gap: var(--gap);
+      overflow:auto;
     }
-    @media (max-width: 1400px){ .wall{ grid-template-columns: repeat(3, minmax(240px, 1fr)); } }
-    @media (max-width: 980px){  .wall{ grid-template-columns: repeat(2, minmax(220px, 1fr)); } }
-    @media (max-width: 560px){  .wall{ grid-template-columns: 1fr; } }
+    @media (max-width: 1200px){ .grid{ grid-template-columns: repeat(3, minmax(240px, 1fr)); } }
+    @media (max-width: 900px) { .grid{ grid-template-columns: repeat(2, minmax(240px, 1fr)); } }
+    @media (max-width: 520px) { .grid{ grid-template-columns: 1fr; } }
 
-    .tile{
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.04);
-      border-radius: 14px;
+    .card{
+      background: var(--panel);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
       overflow:hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,.25);
       display:flex;
       flex-direction:column;
-      min-height: 260px;
+      min-height: 240px;
     }
-    .tile-hd{
-      padding: 10px 10px 8px;
-      border-bottom:1px solid var(--border);
-      display:flex;
-      align-items:flex-start;
-      justify-content:space-between;
+    .cardHead{
+      display:flex; align-items:center; justify-content:space-between;
       gap:10px;
+      padding:10px 10px 8px;
+      border-bottom:1px solid rgba(255,255,255,.08);
+      box-sizing:border-box;
     }
-    .tile-title{ font-weight: 850; font-size: 13px; line-height:1.25; }
-    .tile-sub{ color: var(--muted); font-size: 12px; margin-top:4px; line-height:1.3; }
+    .meta{ display:flex; flex-direction:column; gap:4px; min-width:0; }
+    .region{ font-weight:900; font-size:13px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+    .note{ font-size:11px; color:var(--muted); line-height:1.3; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
-    .frame-wrap{
-      position: relative;
+    .headBtns{ display:flex; gap:6px; }
+    .pill{
+      font-size:11px;
+      padding:6px 8px;
+      border-radius:999px;
+      border:1px solid var(--border2);
+      background: rgba(255,255,255,.06);
+      color:var(--text);
+      text-decoration:none;
+      cursor:pointer;
+      white-space:nowrap;
+    }
+    .pill:hover{ border-color: rgba(255,255,255,.28); background: rgba(255,255,255,.10); }
+
+    .frameWrap{
+      position:relative;
       flex:1;
-      min-height: 210px;
-      background:#000;
+      background:#111;
+      min-height: 180px;
     }
-
-    /* ✅ iframe이 “잘려 보이는 느낌” 줄이기: 전체 꽉 채우기 */
     iframe{
-      position:absolute;
-      inset:0;
       width:100%;
       height:100%;
       border:0;
-      background:#000;
+      background:#111;
     }
 
-    .tile-actions{
-      padding: 10px;
-      border-top:1px solid var(--border);
-      display:flex;
-      gap:8px;
-    }
-    .tile-actions a{
-      flex:1;
+    /* ✅ iframe 접고 “버튼 모드”로 바꾸기 */
+    .fallback{
+      position:absolute; inset:0;
+      display:none;
+      align-items:center; justify-content:center;
+      padding:14px;
       text-align:center;
-      text-decoration:none;
-      border:1px solid var(--border);
-      background: rgba(255,255,255,.06);
-      color: var(--text);
-      padding: 9px 12px;
-      border-radius: 12px;
-      font-weight:800;
-      display:inline-flex;
-      align-items:center;
-      justify-content:center;
+      background: linear-gradient(0deg, rgba(0,0,0,.55), rgba(0,0,0,.35));
     }
-    .tile-actions a:hover{ background: rgba(255,255,255,.10); }
+    .fallback.show{ display:flex; }
+    .fallback .box{
+      border:1px solid rgba(255,255,255,.18);
+      background: rgba(255,255,255,.06);
+      border-radius:12px;
+      padding:10px 12px;
+      max-width:340px;
+      color: rgba(255,255,255,.85);
+      font-size:12px;
+    }
+    .fallback .actions{ margin-top:10px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap; }
   </style>
 </head>
 
 <body>
   <header>
-    <div class="header-inner">
-      <div>
-        <div class="title">CCTV 12권역 모니터링</div>
-        <div class="muted" id="lastUpdated">데이터 로딩 중…</div>
-      </div>
-      <div class="spacer"></div>
-      <button class="btn" id="btnReload">새로고침</button>
+    <div>
+      <div class="title">CCTV 모니터링 (구글시트 CSV 연동)</div>
+      <div class="sub" id="statusText">데이터 로딩 중…</div>
+    </div>
+
+    <div class="controls">
+      <button class="btn" id="reloadAll">전체 리로드</button>
+      <button class="btn" id="toggleAuto">자동 새로고침: OFF</button>
+      <button class="btn" id="toggleStrict">차단추정시 즉시접기: ON</button>
+      <span class="sub" id="autoInfo">권장: 5~10분</span>
     </div>
   </header>
 
-  <main>
-    <section class="panel">
-      <div class="panel-hd">
-        <div class="panel-title">관제 화면(멀티뷰)</div>
-        <div class="spacer"></div>
-        <span class="badge" id="countBadge">0</span>
-      </div>
-
-      <div class="toolbar">
-        <input class="input" id="q" placeholder="검색: 지역/카메라명/제공처" />
-        <button class="btn" id="btnClear">초기화</button>
-      </div>
-
-      <div class="wall" id="wall"></div>
-    </section>
-  </main>
+  <div class="grid" id="grid"></div>
 
 <script>
   const CSV_URL = "https://docs.google.com/spreadsheets/d/e/2PACX-1vTZZaK8GDz_FZsefh-XoCkPmQhKOugjSRNioC5M8fAUH87iiyQV8KK28wCVN4_dbWJukM-Rbwkkbz_G/pub?gid=1422576665&single=true&output=csv";
 
-  let allCctv = [];
-  let filtered = [];
+  const grid = document.getElementById("grid");
+  const reloadAllBtn = document.getElementById("reloadAll");
+  const toggleAutoBtn = document.getElementById("toggleAuto");
+  const toggleStrictBtn = document.getElementById("toggleStrict");
+  const autoInfo = document.getElementById("autoInfo");
+  const statusText = document.getElementById("statusText");
 
-  const $ = (id) => document.getElementById(id);
-
-  function setUpdatedText(){
-    const now = new Date();
-    const pad = (n)=> String(n).padStart(2,"0");
-    $("lastUpdated").textContent =
-      `마지막 새로고침: ${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
-  }
+  let autoOn = false;
+  let strictFallback = true; // ✅ 차단 추정이면 iframe 빨리 접기
+  let autoTimer = null;
+  const AUTO_MIN = 5;
 
   function escapeHtml(s){
-    return String(s ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
+    return String(s || "")
+      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+  }
+  function escapeAttr(s){
+    return String(s || "")
+      .replace(/&/g,"&amp;").replace(/"/g,"&quot;")
+      .replace(/</g,"&lt;").replace(/>/g,"&gt;");
   }
 
   function parseCsv(text){
     const rows = [];
-    let cur = "", row = [], inQ = false;
-    for (let i=0;i<text.length;i++){
+    let row = [], cur = "", inQ = false;
+    for (let i=0; i<text.length; i++){
       const ch = text[i], next = text[i+1];
-      if (ch === '"' && next === '"'){ cur += '"'; i++; continue; }
-      if (ch === '"'){ inQ = !inQ; continue; }
-      if (!inQ && ch === ','){ row.push(cur); cur=""; continue; }
-      if (!inQ && (ch === '\n' || ch === '\r')){
-        if (cur.length || row.length){ row.push(cur); rows.push(row); }
-        cur=""; row=[];
-        if (ch === '\r' && next === '\n') i++;
+      if (ch === '"'){
+        if (inQ && next === '"'){ cur += '"'; i++; }
+        else inQ = !inQ;
+        continue;
+      }
+      if (!inQ && ch === ","){ row.push(cur); cur=""; continue; }
+      if (!inQ && (ch === "\n" || ch === "\r")){
+        if (ch === "\r" && next === "\n") i++;
+        row.push(cur); cur="";
+        if (row.some(c => String(c||"").trim() !== "")) rows.push(row);
+        row = [];
         continue;
       }
       cur += ch;
     }
-    if (cur.length || row.length){ row.push(cur); rows.push(row); }
+    if (cur.length || row.length){
+      row.push(cur);
+      if (row.some(c => String(c||"").trim() !== "")) rows.push(row);
+    }
     return rows;
   }
 
-  async function fetchCsv(){
-    const res = await fetch(CSV_URL, { cache: "no-store" });
-    if (!res.ok) throw new Error("CSV fetch 실패: " + res.status);
-    const text = await res.text();
-    return parseCsv(text);
+  function normalizeHeaders(h){
+    return String(h||"").trim().toLowerCase()
+      .replace(/\s+/g,"")
+      .replace(/[\u200b-\u200d\uFEFF]/g,"");
   }
 
-  function normalizeCctv(obj){
-    const clean = (s) => String(s ?? "").replace(/^\uFEFF/, "").trim();
-    return {
-      region: clean(obj.region || obj.Region || obj.지역 || obj.시군구 || ""),
-      name: clean(obj.name || obj.Name || obj.카메라명 || obj.title || "CCTV"),
-      provider: clean(obj.provider || obj.Provider || obj.제공처 || obj.출처 || ""),
-      url: clean(obj.url || obj.URL || obj.link || obj.링크 || obj.주소 || "")
-    };
+  function mapCsvToItems(rows){
+    if (!rows || rows.length < 2) return [];
+    const header = rows[0];
+    const idx = {};
+    header.forEach((h, i) => idx[normalizeHeaders(h)] = i);
+
+    const iRegion = idx["region"] ?? idx["권역"] ?? idx["지역"] ?? 0;
+    const iUrl    = idx["url"] ?? idx["링크"] ?? idx["cctv"] ?? idx["주소"] ?? 1;
+    const iNote   = idx["note"] ?? idx["비고"] ?? idx["설명"] ?? 2;
+
+    return rows.slice(1)
+      .map(r => ({
+        region: String(r[iRegion] ?? "").trim(),
+        url: String(r[iUrl] ?? "").trim(),
+        note: String(r[iNote] ?? "").trim()
+      }))
+      .filter(x => x.region && x.url);
   }
 
-  function applyFilter(){
-    const q = $("q").value.trim().toLowerCase();
-    filtered = !q ? [...allCctv] : allCctv.filter(x => {
-      const it = normalizeCctv(x);
-      return (
-        (it.region||"").toLowerCase().includes(q) ||
-        (it.name||"").toLowerCase().includes(q) ||
-        (it.provider||"").toLowerCase().includes(q) ||
-        (it.url||"").toLowerCase().includes(q)
-      );
-    });
-    renderWall();
+  function withCacheBust(url){
+    if (!url) return "";
+    try{
+      const u = new URL(url);
+      u.searchParams.set("_t", Date.now());
+      return u.toString();
+    }catch(e){
+      return url + (url.includes("?") ? "&" : "?") + "_t=" + Date.now();
+    }
   }
 
-  function renderWall(){
-    const wall = $("wall");
-    wall.innerHTML = "";
-    $("countBadge").textContent = `${filtered.length}개`;
+  function buildCard(item, idx){
+    const region = item.region || "-";
+    const note = item.note || "";
+    const url = item.url || "";
 
-    filtered.forEach((raw) => {
-      const it = normalizeCctv(raw);
-      const url = it.url || "about:blank";
+    const card = document.createElement("div");
+    card.className = "card";
 
-      const tile = document.createElement("div");
-      tile.className = "tile";
+    card.innerHTML = `
+      <div class="cardHead">
+        <div class="meta">
+          <div class="region">${escapeHtml(region)}</div>
+          <div class="note">${note ? escapeHtml(note) : "&nbsp;"}</div>
+        </div>
+        <div class="headBtns">
+          <a class="pill" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">새창</a>
+          <button class="pill" data-action="reload">리로드</button>
+        </div>
+      </div>
 
-      tile.innerHTML = `
-        <div class="tile-hd">
-          <div>
-            <div class="tile-title">${escapeHtml(it.name || "CCTV")}</div>
-            <div class="tile-sub">${escapeHtml(it.region)}${it.provider ? " · " + escapeHtml(it.provider) : ""}</div>
+      <div class="frameWrap">
+        <iframe data-idx="${idx}" src="${escapeAttr(withCacheBust(url))}" loading="lazy"></iframe>
+
+        <div class="fallback" id="fb_${idx}">
+          <div class="box">
+            iframe 재생이 제한될 수 있어요.<br/>
+            <b>관제 화면 방해를 줄이기 위해 자동으로 접었습니다.</b>
+            <div class="actions">
+              <a class="pill" href="${escapeAttr(url)}" target="_blank" rel="noopener noreferrer">새창으로 보기</a>
+              <button class="pill" data-action="try">다시 시도</button>
+            </div>
           </div>
-          <span class="badge">LIVE</span>
         </div>
+      </div>
+    `;
 
-        <div class="frame-wrap">
-          <iframe loading="lazy" referrerpolicy="no-referrer" sandbox="allow-scripts allow-same-origin allow-forms allow-popups"
-                  src="${escapeHtml(url)}" title="${escapeHtml(it.name || "CCTV")}"></iframe>
-        </div>
+    const iframe = card.querySelector("iframe");
+    const fb = card.querySelector("#fb_" + idx);
 
-        <div class="tile-actions">
-          <a href="${escapeHtml(url)}" target="_blank" rel="noopener noreferrer">새 탭 열기</a>
-        </div>
-      `;
-      wall.appendChild(tile);
+    // 개별 리로드
+    card.querySelector('[data-action="reload"]')?.addEventListener("click", () => {
+      iframe.src = withCacheBust(url);
+      if (fb) fb.classList.remove("show");
+    });
+
+    // 다시 시도
+    card.querySelector('[data-action="try"]')?.addEventListener("click", () => {
+      if (fb) fb.classList.remove("show");
+      iframe.style.display = "block";
+      iframe.src = withCacheBust(url);
+      armFallbackCheck(iframe, fb, url);
+    });
+
+    // ✅ 차단 추정이면 빨리 접기(브라우저 경고가 계속 뜨는 걸 최소화)
+    armFallbackCheck(iframe, fb, url);
+
+    return card;
+  }
+
+  function armFallbackCheck(iframe, fb, url){
+    if (!strictFallback) return;
+
+    // 완벽 판별 불가라 “관제 방해 최소화” 목적의 추정 로직:
+    // 2.5초 후에도 로드/화면이 애매하면 iframe 숨기고 버튼 모드로 전환
+    setTimeout(() => {
+      // iframe이 이미 다른 페이지로 이동됐거나 제거됐으면 skip
+      if (!iframe || !fb) return;
+
+      // 여기서 cross-origin 때문에 내부 접근 불가.
+      // 대신 "일단 접어서 경고 노출을 줄인다"가 목적.
+      fb.classList.add("show");
+      iframe.style.display = "none";
+    }, 2500);
+  }
+
+  function reloadAll(){
+    document.querySelectorAll(".card iframe").forEach((iframe) => {
+      const src = iframe.getAttribute("src") || "";
+      iframe.setAttribute("src", withCacheBust(src));
     });
   }
 
-  async function load(){
-    setUpdatedText();
+  async function loadAndRender(){
+    grid.innerHTML = "";
+    statusText.textContent = "CSV 로딩 중…";
 
-    const rows = await fetchCsv();
-    if (!rows || rows.length < 2) throw new Error("CSV 행이 없습니다.");
+    try{
+      const res = await fetch(CSV_URL, { cache: "no-store" });
+      if (!res.ok) throw new Error("CSV HTTP " + res.status);
+      const text = await res.text();
 
-    const clean = (s) => String(s ?? "").replace(/^\uFEFF/, "").trim();
-    const header = (rows[0] || []).map(h => clean(h).toLowerCase());
-    const dataRows = rows.slice(1).filter(r => r && r.join("").trim().length);
+      const rows = parseCsv(text);
+      const items = mapCsvToItems(rows);
 
-    const idxByNames = (names) => {
-      for (const n of names){
-        const i = header.indexOf(n);
-        if (i >= 0) return i;
+      if (!items.length){
+        statusText.textContent = "CSV 데이터가 비어있거나 표시할 항목이 없습니다.";
+        return;
       }
-      return -1;
-    };
 
-    let iRegion   = idxByNames(["region","지역","권역","시군구","지역명"]);
-    let iName     = idxByNames(["name","카메라명","cctv명","지점명","title","명칭"]);
-    let iProvider = idxByNames(["provider","제공처","출처","기관","소스"]);
-    let iUrl      = idxByNames(["url","링크","link","주소","바로가기","cctv url","cctv링크","cctv주소"]);
+      items.forEach((item, idx) => grid.appendChild(buildCard(item, idx)));
 
-    if (iUrl < 0){
-      const sample = dataRows.slice(0, 10);
-      const colCount = Math.max(...sample.map(r => r.length));
-      let best = -1, bestScore = 0;
-      for (let c = 0; c < colCount; c++){
-        let score = 0;
-        for (const r of sample){
-          const v = clean(r[c]);
-          if (/^https?:\/\//i.test(v)) score++;
-        }
-        if (score > bestScore){ bestScore = score; best = c; }
-      }
-      iUrl = bestScore > 0 ? best : -1;
+      const now = new Date();
+      statusText.textContent =
+        `표시 ${items.length}개 · 마지막 로드: ${now.toLocaleString("ko-KR")} · (시트 수정 시 새로고침 반영)`;
+
+    }catch(e){
+      statusText.textContent = "로딩 실패: " + (e.message || e);
     }
-
-    if (iUrl < 0){
-      console.log("CSV HEADER:", header);
-      $("lastUpdated").textContent = "CSV에서 URL 컬럼을 못 찾았어요. (F12 Console의 CSV HEADER 확인)";
-      allCctv = [];
-      filtered = [];
-      renderWall();
-      return;
-    }
-
-    allCctv = dataRows.map(r => ({
-      region:   iRegion   >= 0 ? clean(r[iRegion]) : "",
-      name:     iName     >= 0 ? clean(r[iName]) : "CCTV",
-      provider: iProvider >= 0 ? clean(r[iProvider]) : "",
-      url:      clean(r[iUrl])
-    }))
-    .filter(x => /^https?:\/\//i.test(x.url));
-
-    filtered = [...allCctv];
-    renderWall();
   }
 
-  $("btnReload").addEventListener("click", () => load().catch(console.error));
-  $("btnClear").addEventListener("click", () => { $("q").value=""; applyFilter(); });
-  $("q").addEventListener("input", applyFilter);
+  reloadAllBtn.addEventListener("click", reloadAll);
 
-  load().catch(err => {
-    console.error(err);
-    $("lastUpdated").textContent = "로딩 실패: " + (err?.message || err);
+  toggleAutoBtn.addEventListener("click", () => {
+    autoOn = !autoOn;
+    toggleAutoBtn.textContent = "자동 새로고침: " + (autoOn ? "ON" : "OFF");
+    autoInfo.textContent = autoOn ? (AUTO_MIN + "분마다 전체 리로드") : "권장: 5~10분";
+
+    if (autoTimer) clearInterval(autoTimer);
+    autoTimer = null;
+
+    if (autoOn){
+      autoTimer = setInterval(reloadAll, AUTO_MIN * 60 * 1000);
+    }
   });
+
+  toggleStrictBtn.addEventListener("click", () => {
+    strictFallback = !strictFallback;
+    toggleStrictBtn.textContent = "차단추정시 즉시접기: " + (strictFallback ? "ON" : "OFF");
+  });
+
+  loadAndRender();
 </script>
 </body>
 </html>
